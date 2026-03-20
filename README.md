@@ -1,54 +1,39 @@
 # cdiff
 
-Browser-based git diff viewer for AI coding workflows. See what changed without opening VS Code.
+Browser-based git diff viewer for AI coding workflows. See what changed without opening VS Code or Cursor.
 
-## Why
-
-When using AI coding agents (Claude Code, Codex) in the terminal, you make changes across many files but have no lightweight way to see the full picture. `git diff` is hard to scan. Opening VS Code/Cursor just to glance at changes is a context-switch tax.
+When using AI coding agents (Claude Code, Codex) in the terminal, you make changes across many files but have no lightweight way to see the full picture. `git diff` is hard to scan. Opening a full IDE just to glance at changes is a context-switch tax.
 
 cdiff opens a browser dashboard with a VS Code-style file tree and syntax-highlighted diffs. It live-reloads as files change.
 
-## Install as a Claude Code skill
+## Install — takes 30 seconds
 
-**Step 1: Install globally**
+**Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex](https://github.com/openai/codex), [Git](https://git-scm.com/), [Bun](https://bun.sh/)
 
-Open Claude Code and run:
+### Step 1: Install on your machine
 
-```
-git clone https://github.com/garrrikkotua/cdiff.git ~/.claude/skills/cdiff-viewer && cd ~/.claude/skills/cdiff-viewer && ./setup
-```
+Open Claude Code (or Codex) and paste this. The agent does the rest.
 
-Then add to your `CLAUDE.md`:
+> Install cdiff: run **`git clone https://github.com/garrrikkotua/cdiff.git ~/.claude/skills/cdiff-viewer && cd ~/.claude/skills/cdiff-viewer && ./setup`** then add a "cdiff" section to CLAUDE.md that lists the available skill: /cdiff.
 
-```markdown
-## cdiff
-Available skills: /cdiff
-```
+### Step 2: Add to your repo so teammates get it (optional)
 
-**Step 2: Add to your project (optional)**
+> Add cdiff to this project: run **`cp -Rf ~/.claude/skills/cdiff-viewer .claude/skills/cdiff-viewer && rm -rf .claude/skills/cdiff-viewer/.git && cd .claude/skills/cdiff-viewer && ./setup`** then add a "cdiff" section to this project's CLAUDE.md that lists the available skill: /cdiff.
 
-To share cdiff with teammates so they get it automatically:
+Real files get committed to your repo (not a submodule), so `git clone` just works.
 
-```
-cp -Rf ~/.claude/skills/cdiff-viewer .claude/skills/cdiff-viewer && rm -rf .claude/skills/cdiff-viewer/.git && cd .claude/skills/cdiff-viewer && ./setup
-```
-
-## Install standalone
-
-If you just want the CLI without the Claude Code skill:
+### Standalone (without Claude Code)
 
 ```bash
-# Requires Bun (https://bun.sh)
-git clone https://github.com/garrrikkotua/cdiff.git
-cd cdiff
-bun install
+git clone https://github.com/garrrikkotua/cdiff.git && cd cdiff && bun install
+bun run src/cli.ts
 ```
 
 ## Usage
 
-### Claude Code
+### In Claude Code
 
-Just type `/cdiff` in Claude Code. It opens the browser dashboard automatically.
+Just type `/cdiff`. It opens the browser dashboard automatically.
 
 ### CLI
 
@@ -64,14 +49,6 @@ bun run src/cli.ts --port 4000
 ```
 
 The browser opens automatically. Press `Ctrl+C` to stop.
-
-### Global command
-
-```bash
-bun link
-cdiff
-cdiff main..feature-branch
-```
 
 ## Features
 
