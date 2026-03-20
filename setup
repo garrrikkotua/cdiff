@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CDIFF_DIR="$(cd "$(dirname "$0")" && pwd)"
+CDIFF_DIRNAME="$(basename "$CDIFF_DIR")"
+
+# Check for bun
+if ! command -v bun &>/dev/null; then
+  echo "cdiff requires bun. Install it: curl -fsSL https://bun.sh/install | bash"
+  exit 1
+fi
+
+# Install dependencies
+echo "Installing dependencies..."
+cd "$CDIFF_DIR"
+bun install --frozen-lockfile 2>/dev/null || bun install
+
+# Create skill symlink if we're inside a .claude/skills directory
+PARENT_DIR="$(basename "$(dirname "$CDIFF_DIR")")"
+if [ "$PARENT_DIR" = "skills" ]; then
+  SKILLS_DIR="$(dirname "$CDIFF_DIR")"
+  TARGET="$SKILLS_DIR/cdiff"
+
+  if [ ! -e "$TARGET" ] || [ -L "$TARGET" ]; then
+    ln -snf "$CDIFF_DIRNAME/skill" "$TARGET"
+    echo "  linked skill: cdiff"
+  fi
+fi
+
+echo ""
+echo "cdiff ready."
+echo "  linked skill: /cdiff"
+echo ""
+echo "Shell cwd was reset to $CDIFF_DIR"

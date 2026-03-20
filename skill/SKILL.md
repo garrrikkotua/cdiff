@@ -17,16 +17,26 @@ Opens a live-updating browser dashboard showing your current git diff.
 
 ## Usage
 
+Locate the cdiff install directory, then run:
+
+```bash
+_CDIFF=""
+[ -d "${CLAUDE_SKILL_DIR}/../src" ] && _CDIFF="${CLAUDE_SKILL_DIR}/.."
+[ -z "$_CDIFF" ] && [ -d ~/.claude/skills/cdiff-viewer/src ] && _CDIFF=~/.claude/skills/cdiff-viewer
+[ -z "$_CDIFF" ] && [ -d .claude/skills/cdiff-viewer/src ] && _CDIFF=.claude/skills/cdiff-viewer
+echo "CDIFF_DIR: $_CDIFF"
+```
+
 Run cdiff to show working directory changes:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)" && bun run src/cli.ts
+bun run "$_CDIFF/src/cli.ts"
 ```
 
 To compare branches:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)" && bun run src/cli.ts main..HEAD
+bun run "$_CDIFF/src/cli.ts" main..HEAD
 ```
 
 Tell the user: "cdiff is running — check your browser. Press Ctrl+C in the terminal when done."

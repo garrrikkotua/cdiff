@@ -2,29 +2,55 @@
 
 Browser-based git diff viewer for AI coding workflows. See what changed without opening VS Code.
 
-![cdiff](https://img.shields.io/badge/version-0.1.0-blue)
-
 ## Why
 
 When using AI coding agents (Claude Code, Codex) in the terminal, you make changes across many files but have no lightweight way to see the full picture. `git diff` is hard to scan. Opening VS Code/Cursor just to glance at changes is a context-switch tax.
 
 cdiff opens a browser dashboard with a VS Code-style file tree and syntax-highlighted diffs. It live-reloads as files change.
 
-## Install
+## Install as a Claude Code skill
 
-Requires [Bun](https://bun.sh):
+**Step 1: Install globally**
+
+Open Claude Code and run:
+
+```
+git clone https://github.com/garrrikkotua/cdiff.git ~/.claude/skills/cdiff-viewer && cd ~/.claude/skills/cdiff-viewer && ./setup
+```
+
+Then add to your `CLAUDE.md`:
+
+```markdown
+## cdiff
+Available skills: /cdiff
+```
+
+**Step 2: Add to your project (optional)**
+
+To share cdiff with teammates so they get it automatically:
+
+```
+cp -Rf ~/.claude/skills/cdiff-viewer .claude/skills/cdiff-viewer && rm -rf .claude/skills/cdiff-viewer/.git && cd .claude/skills/cdiff-viewer && ./setup
+```
+
+## Install standalone
+
+If you just want the CLI without the Claude Code skill:
 
 ```bash
-# Install Bun (if you don't have it)
-curl -fsSL https://bun.sh/install | bash
-
-# Clone and run
+# Requires Bun (https://bun.sh)
 git clone https://github.com/garrrikkotua/cdiff.git
 cd cdiff
 bun install
 ```
 
 ## Usage
+
+### Claude Code
+
+Just type `/cdiff` in Claude Code. It opens the browser dashboard automatically.
+
+### CLI
 
 ```bash
 # View working directory changes
@@ -39,26 +65,13 @@ bun run src/cli.ts --port 4000
 
 The browser opens automatically. Press `Ctrl+C` to stop.
 
-### As a global command
+### Global command
 
 ```bash
-# Link globally
 bun link
-
-# Now use from any repo
 cdiff
 cdiff main..feature-branch
 ```
-
-### As a Claude Code skill
-
-Copy the `skill/` directory to your Claude Code skills:
-
-```bash
-cp -r skill ~/.claude/skills/cdiff
-```
-
-Then use `/cdiff` in Claude Code to open the diff viewer.
 
 ## Features
 
