@@ -1,0 +1,19 @@
+{
+  "name": "cdiff",
+  "version": "0.1.0",
+  "description": "Lightweight browser-based git diff viewer for AI coding workflows",
+  "type": "module",
+  "bin": {
+    "cdiff": "./src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build --compile src/cli.ts --outfile dist/cdiff",
+    "test": "bun test"
+  },
+  "keywords": ["git", "diff", "viewer", "cli", "developer-tools"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
