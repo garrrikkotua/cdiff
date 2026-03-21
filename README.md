@@ -6,6 +6,10 @@ When using AI coding agents (Claude Code, Codex) in the terminal, you make chang
 
 cdiff opens a browser dashboard with a VS Code-style file tree and syntax-highlighted diffs. It live-reloads as files change.
 
+Works especially well with [cmux](https://cmux.dev) — run cdiff in a browser pane alongside Claude Code and watch diffs update in real time as the agent writes code.
+
+![cdiff running in cmux alongside Claude Code — live diff view updates as the agent makes changes](docs/images/cdiff-cmux-demo.png)
+
 ## Install — takes 30 seconds
 
 **Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex](https://github.com/openai/codex), [Git](https://git-scm.com/), [Bun](https://bun.sh/)
