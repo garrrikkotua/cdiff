@@ -11,6 +11,9 @@ export function renderHTML(opts: HtmlOptions): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>cdiff</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" id="hljs-dark">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" media="(prefers-color-scheme: light)" id="hljs-light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <style>
 :root {
   --font-ui: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -129,6 +132,10 @@ a { color:var(--accent); text-decoration:none; }
 /* Binary / special */
 .special { padding:24px 16px; color:var(--text-3); font-size:13px; text-align:center; }
 
+/* Syntax highlighting overrides */
+.hljs { background:transparent !important; padding:0 !important; }
+.dc code.hljs { display:inline !important; overflow-x:visible !important; }
+
 /* Responsive */
 @media (max-width:768px) { .sidebar { width:200px; } }
 </style>
@@ -201,7 +208,50 @@ function toggleTheme() {
   const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   el.setAttribute('data-theme', next);
   localStorage.setItem('cdiff-theme', next);
+  updateHljsTheme(next);
 }
+
+function updateHljsTheme(theme) {
+  document.getElementById('hljs-dark').media = theme === 'dark' ? 'all' : 'not all';
+  document.getElementById('hljs-light').media = theme === 'light' ? 'all' : 'not all';
+}
+
+function getLanguage(path) {
+  const ext = (path || '').split('.').pop()?.toLowerCase();
+  const map = {
+    ts:'typescript', tsx:'typescript', js:'javascript', jsx:'javascript',
+    py:'python', rb:'ruby', go:'go', rs:'rust', java:'java', kt:'kotlin',
+    swift:'swift', c:'c', cpp:'cpp', h:'c', hpp:'cpp', cs:'csharp',
+    php:'php', sh:'bash', bash:'bash', zsh:'bash', fish:'bash',
+    json:'json', yaml:'yaml', yml:'yaml', toml:'toml', xml:'xml',
+    html:'html', css:'css', scss:'scss', less:'less', sql:'sql',
+    md:'markdown', mdx:'markdown', graphql:'graphql', proto:'protobuf',
+    dockerfile:'dockerfile', makefile:'makefile', cmake:'cmake',
+    lua:'lua', r:'r', scala:'scala', dart:'dart', zig:'zig',
+    ex:'elixir', exs:'elixir', erl:'erlang', hs:'haskell',
+    tf:'hcl', vue:'xml', svelte:'xml',
+  };
+  return map[ext] || null;
+}
+
+function highlightCode(code, path) {
+  if (typeof hljs === 'undefined') return esc(code);
+  const lang = getLanguage(path);
+  try {
+    if (lang) {
+      const result = hljs.highlight(code, { language: lang, ignoreIllegals: true });
+      return result.value;
+    }
+    const result = hljs.highlightAuto(code);
+    return result.value;
+  } catch { return esc(code); }
+}
+
+// Init hljs theme
+(function() {
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateHljsTheme(theme);
+})();
 
 // Sidebar panel
 function setSidebarPanel(p) {
@@ -375,9 +425,11 @@ function renderFileContent(data) {
     return;
   }
 
-  const lines = data.content.split('\\n');
+  // Highlight entire content, then split by lines
+  const highlighted = highlightCode(data.content, data.path);
+  const lines = highlighted.split('\\n');
   for (let i = 0; i < lines.length; i++) {
-    html += '<div class="fv-line"><span class="ln">' + (i + 1) + '</span><span class="dc">' + esc(lines[i]) + '</span></div>';
+    html += '<div class="fv-line"><span class="ln">' + (i + 1) + '</span><span class="dc"><code class="hljs">' + lines[i] + '</code></span></div>';
   }
 
   if (data.truncated) {
@@ -428,19 +480,43 @@ function renderDiff(diff) {
 
 function renderUnifiedDiff(diff) {
   let html = '';
+  // Collect all code to highlight in one pass
+  const allCode = [];
+  for (const hunk of diff.hunks) {
+    for (const line of hunk.lines) {
+      if (line.type !== 'no-newline') allCode.push(line.content);
+    }
+  }
+  const highlighted = highlightCode(allCode.join('\\n'), diff.path).split('\\n');
+  let hIdx = 0;
+
   for (const hunk of diff.hunks) {
     html += '<div class="hunk-hdr">' + esc(hunk.header) + '</div>';
     for (const line of hunk.lines) {
       if (line.type === 'no-newline') { html += '<div class="dl nnl">\\\\ No newline at end of file</div>'; continue; }
       const cls = line.type;
       const num = line.type === 'add' ? (line.newNum || '') : line.type === 'del' ? (line.oldNum || '') : (line.newNum || '');
-      html += '<div class="dl ' + cls + '"><span class="ln">' + num + '</span><span class="dc">' + esc(line.content) + '</span></div>';
+      const content = highlighted[hIdx] !== undefined ? highlighted[hIdx] : esc(line.content);
+      hIdx++;
+      html += '<div class="dl ' + cls + '"><span class="ln">' + num + '</span><span class="dc"><code class="hljs">' + content + '</code></span></div>';
     }
   }
   return html;
 }
 
 function renderSplitDiff(diff) {
+  // Highlight all lines in one pass
+  const allCode = [];
+  for (const hunk of diff.hunks) {
+    for (const line of hunk.lines) {
+      if (line.type !== 'no-newline') allCode.push(line.content);
+    }
+  }
+  const highlighted = highlightCode(allCode.join('\\n'), diff.path).split('\\n');
+  let hIdx = 0;
+
+  function hl() { return highlighted[hIdx] !== undefined ? highlighted[hIdx++] : ''; }
+
   let html = '<div class="sbs"><div class="side"><div class="side-hdr">Before</div>';
   let htmlR = '<div class="side"><div class="side-hdr">After</div>';
   for (const hunk of diff.hunks) {
@@ -452,18 +528,20 @@ function renderSplitDiff(diff) {
       if (lines[i].type === 'no-newline') { i++; continue; }
       if (lines[i].type === 'ctx') {
         const l = lines[i];
-        html += '<div class="dl ctx"><span class="ln">' + (l.oldNum||'') + '</span><span class="dc">' + esc(l.content) + '</span></div>';
-        htmlR += '<div class="dl ctx"><span class="ln">' + (l.newNum||'') + '</span><span class="dc">' + esc(l.content) + '</span></div>';
+        const c = hl();
+        html += '<div class="dl ctx"><span class="ln">' + (l.oldNum||'') + '</span><span class="dc"><code class="hljs">' + c + '</code></span></div>';
+        htmlR += '<div class="dl ctx"><span class="ln">' + (l.newNum||'') + '</span><span class="dc"><code class="hljs">' + c + '</code></span></div>';
         i++;
       } else {
         const delLines = [], addLines = [];
-        while (i < lines.length && lines[i].type === 'del') { delLines.push(lines[i]); i++; }
-        while (i < lines.length && lines[i].type === 'add') { addLines.push(lines[i]); i++; }
+        const delHl = [], addHl = [];
+        while (i < lines.length && lines[i].type === 'del') { delLines.push(lines[i]); delHl.push(hl()); i++; }
+        while (i < lines.length && lines[i].type === 'add') { addLines.push(lines[i]); addHl.push(hl()); i++; }
         const max = Math.max(delLines.length, addLines.length);
         for (let j = 0; j < max; j++) {
-          if (j < delLines.length) { html += '<div class="dl del"><span class="ln">' + (delLines[j].oldNum||'') + '</span><span class="dc">' + esc(delLines[j].content) + '</span></div>'; }
+          if (j < delLines.length) { html += '<div class="dl del"><span class="ln">' + (delLines[j].oldNum||'') + '</span><span class="dc"><code class="hljs">' + delHl[j] + '</code></span></div>'; }
           else { html += '<div class="dl pad"></div>'; }
-          if (j < addLines.length) { htmlR += '<div class="dl add"><span class="ln">' + (addLines[j].newNum||'') + '</span><span class="dc">' + esc(addLines[j].content) + '</span></div>'; }
+          if (j < addLines.length) { htmlR += '<div class="dl add"><span class="ln">' + (addLines[j].newNum||'') + '</span><span class="dc"><code class="hljs">' + addHl[j] + '</code></span></div>'; }
           else { htmlR += '<div class="dl pad"></div>'; }
         }
       }
