@@ -1,6 +1,8 @@
 import { getFileTree, getFileDiff, getDiffStats, isMergeInProgress, type DiffMode, type DiffOptions } from "./git";
+import { getDirectoryTree, readFileContent } from "./files";
 import { renderHTML } from "./html";
 import { startWatcher } from "./watcher";
+import { join } from "path";
 
 const sseClients = new Set<ReadableStreamDefaultController>();
 
@@ -66,6 +68,18 @@ export async function startServer(opts: {
             return handleDiff(file, diffOpts);
           }
 
+          if (url.pathname === "/api/files") {
+            return handleFiles(opts.cwd);
+          }
+
+          if (url.pathname === "/api/file") {
+            const file = url.searchParams.get("path");
+            if (!file) {
+              return Response.json({ error: "path parameter required" }, { status: 400 });
+            }
+            return handleFileContent(file, opts.cwd);
+          }
+
           if (url.pathname === "/events") {
             return handleSSE();
           }
@@ -117,6 +131,21 @@ async function handleTree(opts: DiffOptions): Promise<Response> {
 async function handleDiff(file: string, opts: DiffOptions): Promise<Response> {
   const diff = await getFileDiff(file, opts);
   return Response.json(diff);
+}
+
+async function handleFiles(cwd: string): Promise<Response> {
+  const tree = await getDirectoryTree(cwd);
+  return Response.json({ tree });
+}
+
+async function handleFileContent(filePath: string, cwd: string): Promise<Response> {
+  // Prevent path traversal
+  const resolved = join(cwd, filePath);
+  if (!resolved.startsWith(cwd)) {
+    return Response.json({ error: "invalid path" }, { status: 400 });
+  }
+  const result = await readFileContent(resolved);
+  return Response.json({ path: filePath, ...result });
 }
 
 function handleSSE(): Response {

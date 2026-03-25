@@ -1,7 +1,7 @@
 {
   "name": "cdiff",
   "version": "0.1.0",
-  "description": "Lightweight browser-based git diff viewer for AI coding workflows",
+  "description": "Browser-based git diff viewer and file explorer for AI coding workflows",
   "type": "module",
   "bin": {
     "cdiff": "./src/cli.ts"
@@ -11,8 +11,36 @@
     "build": "bun build --compile src/cli.ts --outfile dist/cdiff",
     "test": "bun test"
   },
-  "keywords": ["git", "diff", "viewer", "cli", "developer-tools"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garrrikkotua/cdiff.git"
+  },
+  "keywords": [
+    "git",
+    "diff",
+    "viewer",
+    "file-explorer",
+    "cli",
+    "developer-tools",
+    "claude-code",
+    "ai-coding"
+  ],
+  "author": "Igor Kotua",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/garrrikkotua/cdiff/issues"
+  },
+  "homepage": "https://github.com/garrrikkotua/cdiff#readme",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "files": [
+    "src/",
+    "skill/",
+    "setup",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@types/bun": "latest"
   }

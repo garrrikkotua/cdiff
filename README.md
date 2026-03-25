@@ -1,10 +1,10 @@
 # cdiff
 
-Browser-based git diff viewer for AI coding workflows. See what changed without opening VS Code or Cursor.
+Browser-based mini IDE for AI coding workflows. View diffs and browse files without opening VS Code or Cursor.
 
 When using AI coding agents (Claude Code, Codex) in the terminal, you make changes across many files but have no lightweight way to see the full picture. `git diff` is hard to scan. Opening a full IDE just to glance at changes is a context-switch tax.
 
-cdiff opens a browser dashboard with a VS Code-style file tree and syntax-highlighted diffs. It live-reloads as files change.
+cdiff opens a browser dashboard with two modes: **Changes** (VS Code-style diff viewer) and **Files** (read-only file explorer). It live-reloads as files change.
 
 Works especially well with [cmux](https://cmux.dev) — run cdiff in a browser pane alongside Claude Code and watch diffs update in real time as the agent writes code.
 
@@ -26,7 +26,20 @@ Open Claude Code (or Codex) and paste this. The agent does the rest.
 
 Real files get committed to your repo (not a submodule), so `git clone` just works.
 
-### Standalone (without Claude Code)
+### Install via npm
+
+```bash
+bunx cdiff
+```
+
+Or install globally:
+
+```bash
+bun install -g cdiff
+cdiff
+```
+
+### Standalone (from source)
 
 ```bash
 git clone https://github.com/garrrikkotua/cdiff.git && cd cdiff && bun install
@@ -56,7 +69,9 @@ The browser opens automatically. Press `Ctrl+C` to stop.
 
 ## Features
 
+- **Two sidebar modes** — Changes (diff view) and Files (full directory explorer)
 - **File tree sidebar** with change indicators (M/A/D/R)
+- **Read-only file browser** — browse any file in the project, not just changed ones
 - **Unified and side-by-side** diff views
 - **Staged / Unstaged / All** toggle
 - **Branch comparison** (`cdiff main..HEAD`)
